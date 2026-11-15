@@ -26,12 +26,28 @@ $router = new Router();
 // ROTAS: cada add() diz "quando chegar MÉTODO + CAMINHO, rode esta função"
 
 // GET /users → lista os usuários
-// TEMPORÁRIO: devolve dados fixos só para testar o Router isolado do banco.
 $router->add('GET', '/users', function () {
     $repository = new UserRepository();
     return $repository->findAll();
 });
 
+
+// GET /users/{id} -> busca um usuário por id
+// O Router entrega o valor do {id} no parâmetro $id (ex.: /users/5 → $id = '5')
+$router->add('GET', '/users/{id}', function ($id) {
+    $repository = new UserRepository();
+
+    // (int) converte o texto da URL em número ("5" → 5; "abc" → 0)
+    $retorno = $repository->findById((int) $id);
+
+    // Usuário não existe: 404 com mensagem em JSON (requisito 5 do PDF)
+    if ($retorno === null) {
+        http_response_code(404);
+        return ['error' => 'Usuário não encontrado'];
+    }
+
+    return $retorno; // achou: o Router transforma em JSON com status 200
+});
 
 // Descobre o que foi pedido e entrega ao Router
 
