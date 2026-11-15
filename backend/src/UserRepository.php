@@ -4,6 +4,7 @@ require_once __DIR__ . '/Database.php';
 
 class UserRepository
 {
+    // Busca todos os usuários cadastrados
     public function findAll(): array
     {
         $pdo = Database::connect();
@@ -41,5 +42,39 @@ class UserRepository
         $user['active'] = (bool) $user['active']; // 1/0 do MySQL vira true/false no JSON
 
         return $user;
+    }
+
+    // Grava um novo usuário e devolve o id gerado
+    public function create(string $name, string $email, string $login, string $passwordHash, bool $active): int
+    {
+        $pdo = Database::connect();
+
+        $stmt = $pdo->prepare(
+            'INSERT INTO users (name, email, login, password_hash, active) VALUES (?, ?, ?, ?, ?)'
+        );
+
+        $stmt->execute([$name, $email, $login, $passwordHash, (int) $active]);
+
+        return (int) $pdo->lastInsertId();
+    }
+
+    public function emailExists(string $email): bool
+    {
+        $pdo = Database::connect();
+
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE email = ?');
+        $stmt->execute([$email]);
+
+        return $stmt->fetch() !== false;
+    }
+
+    public function loginExists(string $login): bool
+    {
+        $pdo = Database::connect();
+
+        $stmt = $pdo->prepare('SELECT id FROM users WHERE login = ?');
+        $stmt->execute([$login]);
+
+        return $stmt->fetch() !== false;
     }
 }

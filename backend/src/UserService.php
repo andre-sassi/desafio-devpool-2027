@@ -1,7 +1,19 @@
 <?php
 
+require_once __DIR__ . '/UserRepository.php';
+
 class UserService
 {
+    // O Service usa o Repository para falar com o banco
+    private UserRepository $repository;
+
+    // O construtor roda automaticamente no "new UserService()"
+    public function __construct()
+    {
+        $this->repository = new UserRepository();
+    }
+
+
     // Confere os dados contra as regras de negócio do PDF.
     // Devolve uma lista de mensagens de erro (vazia = tudo certo).
     public function validate(array $data): array
@@ -39,5 +51,44 @@ class UserService
         }
 
         return $errors; // lista vazia = dados válidos
+    }
+
+    // Valida os dados informados no create e retorna o usuário recém criado, ou barra e retorna erro.
+    public function create(array $data): array
+    {
+        $errors = $this->validate($data);
+
+        // Se o e-mail existe, retorna erro
+        if ($this->repository->emailExists(trim($data['email'] ?? ''))) {
+            $errors[] = 'Este e-mail já está cadastrado.';
+        }
+
+        // Se o login existe, retorna erro
+        if ($this->repository->loginExists(trim($data['login'] ?? ''))) {
+            $errors[] = 'Este login já está cadastrado.';
+        }
+
+        //Se houver algum erro, nem chega ao banco
+        if (!empty($errors)) {
+            return ['errors' => $errors];
+        }
+
+        $name   = trim($data['name']);
+        $email  = trim($data['email']);
+        $login  = trim($data['login']);
+        $hash   = password_hash($data['password'], PASSWORD_DEFAULT); // regra 5: nunca grava a senha pura
+        $active = $data['active'] ?? true; // padrão true
+
+        // Grava; se duas requisições simultâneas passarem pela checagem, o UNIQUE do banco barra a segunda
+        try {
+            $id = $this->repository->create($name, $email, $login, $hash, $active);
+        } catch (PDOException $e) {
+            if (($e->errorInfo[1] ?? null) === 1062) { // 1062 = "Duplicate entry" do MySQL
+                return ['errors' => ['E-mail ou login já cadastrado.']];
+            }
+            throw $e; // qualquer outro erro do banco não é problema do usuário: deixa subir
+        }
+        // Devolve o usuário recém-criado, buscado do banco (já sem a senha)
+        return ['user' => $this->repository->findById($id)];
     }
 }

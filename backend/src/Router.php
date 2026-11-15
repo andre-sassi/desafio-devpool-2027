@@ -36,13 +36,13 @@ class Router
 
             // Bateu! Executa o handler entregando os parâmetros (ex.: ['5'] vira handler('5'))
             $dados = $rota['handler'](...$params);
-            echo json_encode($dados); // converte o retorno em JSON e envia como resposta
+            echo json_encode($dados, JSON_UNESCAPED_UNICODE); // converte o retorno em JSON e envia como resposta
             return;                   // achou a rota: encerra aqui
         }
 
         // Se chegou até aqui, nenhuma rota bateu
         http_response_code(404);                              // status HTTP 404 Not Found
-        echo json_encode(['error' => 'Rota não encontrada']); // mensagem de erro em JSON
+        echo json_encode(['error' => 'Rota não encontrada'], JSON_UNESCAPED_UNICODE); // mensagem de erro em JSON
     }
 
     // Compara o molde da rota com o caminho pedido, pedaço por pedaço

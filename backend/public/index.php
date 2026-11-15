@@ -3,6 +3,7 @@
 //Porta de entrada da API, este arquivo entrega a requisição para o Router decidir o que fazer.
 require __DIR__ . '/../src/Router.php'; // carrega a classe Router
 require __DIR__ . '/../src/UserRepository.php'; //carrega a classe UserRepository
+require __DIR__ . '/../src/UserService.php'; //carrega a classe UserService
 
 // Toda resposta desta API é JSON
 header('Content-Type: application/json; charset=utf-8');
@@ -47,6 +48,31 @@ $router->add('GET', '/users/{id}', function ($id) {
     }
 
     return $retorno; // achou: o Router transforma em JSON com status 200
+});
+
+// POST /users -> cadastra um usuário
+$router->add('POST', '/users', function() {
+    
+    // transforma o texto JSON do corpo da requisição, localizado no php://input, em um array do PHP
+    $data = json_decode(file_get_contents('php://input'), true);
+    
+    // Corpo vazio ou JSON malformado retorna erro, pois não dá para validar
+    if (!is_array($data)) {
+        http_response_code(400);
+        return ['errors' => ['O corpo da requisição deve ser um JSON válido.']];
+    }
+    
+    $service = new UserService();
+    $result = $service->create($data);
+
+    // Se tem erros na criação, retorna cod 400 + erros
+    if (isset($result['errors'])) {
+        http_response_code(400);
+        return ['errors' => $result['errors']];
+    }
+    // Senão, retorna sucesso e informa o usuário.
+    http_response_code(201);
+    return $result['user'];
 });
 
 // Descobre o que foi pedido e entrega ao Router
