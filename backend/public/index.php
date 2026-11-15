@@ -2,6 +2,7 @@
 
 //Porta de entrada da API, este arquivo entrega a requisição para o Router decidir o que fazer.
 require __DIR__ . '/../src/Router.php'; // carrega a classe Router
+require __DIR__ . '/../src/UserRepository.php'; //carrega a classe UserRepository
 
 // Toda resposta desta API é JSON
 header('Content-Type: application/json; charset=utf-8');
@@ -27,22 +28,8 @@ $router = new Router();
 // GET /users → lista os usuários
 // TEMPORÁRIO: devolve dados fixos só para testar o Router isolado do banco.
 $router->add('GET', '/users', function () {
-    return [
-        [
-            'id'     => 1,
-            'name'   => 'Ana Souza',
-            'email'  => 'ana@exemplo.com',
-            'login'  => 'ana',
-            'active' => true,
-        ],
-        [
-            'id'     => 2,
-            'name'   => 'André Miguel',
-            'email'  => 'andre@gmail.com',
-            'login'  => 'andre',
-            'active' => false,
-        ]
-    ];
+    $repository = new UserRepository();
+    return $repository->findAll();
 });
 
 
