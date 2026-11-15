@@ -6,6 +6,20 @@ require __DIR__ . '/../src/Router.php'; // carrega a classe Router
 // Toda resposta desta API é JSON
 header('Content-Type: application/json; charset=utf-8');
 
+// CORS: autoriza a tela (Vite, porta 5173) a ler as respostas desta API
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+
+// Pré-verificação (preflight): antes de um POST, PUT ou DELETE, o navegador
+// manda um pedido OPTIONS perguntando "posso fazer isso?".
+// Respondemos só com as autorizações acima (204 = ok, sem conteúdo) e paramos aqui,
+// sem passar pelo Router.
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
+
 $router = new Router();
 
 // ROTAS: cada add() diz "quando chegar MÉTODO + CAMINHO, rode esta função"
