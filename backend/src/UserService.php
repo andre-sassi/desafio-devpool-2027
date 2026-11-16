@@ -16,7 +16,7 @@ class UserService
 
     // Confere os dados contra as regras de negócio do PDF.
     // Devolve uma lista de mensagens de erro (vazia = tudo certo).
-    public function validate(array $data): array
+    public function validate(array $data, bool $isUpdate = false): array
     {
         $errors = [];
 
@@ -32,9 +32,10 @@ class UserService
             $errors[] = 'O login é obrigatório e deve ter no mínimo 3 caracteres.';
         }
 
-        // Regra 5: senha obrigatória, mínimo de 8 caracteres (sem trim: espaço na senha é proposital)
+        // Regra 5: No cadastro -> senha obrigatória, mínimo de 8 caracteres (sem trim: espaço na senha é proposital)
+        // Na edição: senha não veio (ou veio vazia), tudo bem. Se veio, precisa ter, no mínimo, 8 caracteres.
         $password = $data['password'] ?? '';
-        if (mb_strlen($password) < 8) {
+        if (mb_strlen($password) < 8 && (!$isUpdate || $password !== '')) {
             $errors[] = 'A senha é obrigatória e deve ter no mínimo 8 caracteres.';
         }
 
@@ -89,6 +90,61 @@ class UserService
             throw $e; // qualquer outro erro do banco não é problema do usuário: deixa subir
         }
         // Devolve o usuário recém-criado, buscado do banco (já sem a senha)
+        return ['user' => $this->repository->findById($id)];
+    }
+
+    // Edita um usuário: confere se existe, valida, chega a duplicidade (ignorando ele mesmo) e grava
+    public function update(int $id, array $data): array
+    {
+        // 1. Para editar, o usuário precisa existir
+        $current = $this->repository->findById($id);
+        if ($current === null) {
+            return ['notFound' => true];
+        }
+
+        // 2. Regras de formato, na edição (senha opcional)
+        $errors = $this->validate($data, true);
+
+        // Unicidade do e-mail
+        if ($this->repository->emailExists(trim($data['email'] ?? ''), $id)) {
+            $errors[] = 'Este e-mail já está cadastrado.';
+        }
+
+        // Unicidade do login
+        if ($this->repository->loginExists(trim($data['login'] ?? ''), $id)) {
+            $errors[] = 'Este login já está cadastrado.';
+        }
+
+        if (!empty($errors)) {
+            return ['errors' => $errors];
+        }
+
+        // 3. Prepara os dados
+        $name = trim($data['name']);
+        $email = trim($data['email']);
+        $login = trim($data['login']);
+
+        // hash da senha nova (ou null para manter a atual)
+        $hash = null;
+        $password = $data['password'] ?? '';
+        if ($password !== '') {
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+        }
+
+        // active não veio? mantém a situação atual do usuário
+        $active = $data['active'] ?? $current['active'];
+
+        // 4. Grava (o mesmo cuidado com o 1062 do cadastro)
+        try {
+            $this->repository->update($id, $name, $email, $login, $hash, $active);
+        } catch (PDOException $e) {
+            if (($e->errorInfo[1] ?? null) === 1062) {
+                return ['errors' => ['E-mail ou login já cadastrado.']];
+            }
+            throw $e;
+        }
+
+        //5. Devolve o usuário como ficou depois da edição
         return ['user' => $this->repository->findById($id)];
     }
 }

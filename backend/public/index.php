@@ -51,17 +51,17 @@ $router->add('GET', '/users/{id}', function ($id) {
 });
 
 // POST /users -> cadastra um usuário
-$router->add('POST', '/users', function() {
-    
+$router->add('POST', '/users', function () {
+
     // transforma o texto JSON do corpo da requisição, localizado no php://input, em um array do PHP
     $data = json_decode(file_get_contents('php://input'), true);
-    
+
     // Corpo vazio ou JSON malformado retorna erro, pois não dá para validar
     if (!is_array($data)) {
         http_response_code(400);
         return ['errors' => ['O corpo da requisição deve ser um JSON válido.']];
     }
-    
+
     $service = new UserService();
     $result = $service->create($data);
 
@@ -72,6 +72,32 @@ $router->add('POST', '/users', function() {
     }
     // Senão, retorna sucesso e informa o usuário.
     http_response_code(201);
+    return $result['user'];
+});
+
+// PUT /users/{id} -> edita um usuário
+$router->add('PUT', '/users/{id}', function ($id) {
+    $data = json_decode(file_get_contents('php://input'), true);
+
+    if (!is_array($data)) {
+        http_response_code(400);
+        return ['errors' => ['O corpo da requisição deve ser um JSON válido.']];
+    }
+
+    $service = new UserService();
+    $result = $service->update((int) $id, $data);
+
+    if (isset($result['notFound'])) {
+        http_response_code(404);
+        return ['error' => 'Usuário não encontrado'];
+    }
+
+    if (isset($result['errors'])) {
+        http_response_code(400);
+        return ['errors' => $result['errors']];
+    }
+
+    http_response_code(200);
     return $result['user'];
 });
 
