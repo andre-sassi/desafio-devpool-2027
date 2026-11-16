@@ -101,7 +101,7 @@ $router->add('PUT', '/users/{id}', function ($id) {
     return $result['user'];
 });
 
-// DELETE /users/{id} -> exclui um usuário
+// DELETE /users/{id} -> exclusão física; o "desativar" já é feito pelo campo active
 $router->add('DELETE', '/users/{id}', function ($id) {
     $repository = new UserRepository();
 
@@ -111,7 +111,7 @@ $router->add('DELETE', '/users/{id}', function ($id) {
         http_response_code(404);
         return ['error' => 'Usuário não encontrado'];
     }
-    
+
     http_response_code(200);
     return ['message' => 'Usuário excluído com sucesso.'];
 });
