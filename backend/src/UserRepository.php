@@ -93,4 +93,16 @@ class UserRepository
             $stmt->execute([$name, $email, $login, $passwordHash, (int) $active, $id]);
         }
     }
+
+    // Deleta um usuário; devolve true se apagou, false se o id não existia.
+    public function delete(int $id): bool
+    {
+        $pdo = Database::connect();
+
+        $stmt = $pdo->prepare('DELETE FROM users WHERE id = ?');
+        $stmt->execute([$id]);
+
+        // rowCount() = quantas linhas o comando afetou: 1 se apagou, 0 se não existia
+        return $stmt->rowCount() > 0;
+    }
 }

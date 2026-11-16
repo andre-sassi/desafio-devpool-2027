@@ -101,6 +101,21 @@ $router->add('PUT', '/users/{id}', function ($id) {
     return $result['user'];
 });
 
+// DELETE /users/{id} -> exclui um usuário
+$router->add('DELETE', '/users/{id}', function ($id) {
+    $repository = new UserRepository();
+
+    $retorno = $repository->delete((int) $id);
+
+    if ($retorno === false) {
+        http_response_code(404);
+        return ['error' => 'Usuário não encontrado'];
+    }
+    
+    http_response_code(200);
+    return ['message' => 'Usuário excluído com sucesso.'];
+});
+
 // Descobre o que foi pedido e entrega ao Router
 
 // Método HTTP da requisição atual (GET, POST, PUT, DELETE...)
