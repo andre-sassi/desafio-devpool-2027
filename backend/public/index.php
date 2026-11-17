@@ -32,7 +32,6 @@ $router->add('GET', '/users', function () {
     return $repository->findAll();
 });
 
-
 // GET /users/{id} -> busca um usuário por id
 // O Router entrega o valor do {id} no parâmetro $id (ex.: /users/5 → $id = '5')
 $router->add('GET', '/users/{id}', function ($id) {
