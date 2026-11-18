@@ -12,6 +12,7 @@ header('Content-Type: application/json; charset=utf-8');
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
+header_remove('X-Powered-By'); //não revela a linguagem e a versão do servidor
 
 // Pré-verificação (preflight): antes de um POST, PUT ou DELETE, o navegador
 // manda um pedido OPTIONS perguntando "posso fazer isso?".
@@ -35,6 +36,12 @@ $router->add('GET', '/users', function () {
 // GET /users/{id} -> busca um usuário por id
 // O Router entrega o valor do {id} no parâmetro $id (ex.: /users/5 → $id = '5')
 $router->add('GET', '/users/{id}', function ($id) {
+    // Confere se o id não é só dígitos
+    if (!ctype_digit($id)) {
+        http_response_code(400);
+        return ['error' => 'O id deve ser um número inteiro.'];
+    }
+
     $repository = new UserRepository();
 
     // (int) converte o texto da URL em número ("5" → 5; "abc" → 0)
