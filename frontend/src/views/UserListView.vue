@@ -1,5 +1,6 @@
 <template>
     <h2>Usuários</h2>
+    <RouterLink to="/users/new">Novo usuário</RouterLink>
 
     <p v-if="loading">Carregando...</p>
     <p v-else-if="error">{{ error }}</p>
@@ -12,6 +13,7 @@
                 <th>E-mail</th>
                 <th>Login</th>
                 <th>Situação</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
@@ -21,6 +23,7 @@
                 <td>{{ user.email }}</td>
                 <td>{{ user.login }}</td>
                 <td>{{ user.active ? 'Ativo' : 'Inativo' }}</td>
+                <td><RouterLink :to="`/users/${user.id}/edit`">Editar</RouterLink></td>
             </tr>
         </tbody>
     </table>

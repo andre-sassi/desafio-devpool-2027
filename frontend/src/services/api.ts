@@ -1,4 +1,4 @@
-import type { User } from '@/types/User'
+import type { User, UserPayload } from '@/types/User'
 
 // Endereço da API, vindo do .env do frontend
 const API_URL = import.meta.env.VITE_API_URL
@@ -38,4 +38,20 @@ export function listUsers(): Promise<User[]> {
 // Busca um usuário pelo id (GET /users/{id})
 export function getUser(id: number): Promise<User> {
     return request<User>(`/users/${id}`);
+}
+
+// Cadastra um usuário (POST /users)
+export function createUser(payload: UserPayload): Promise<User> {
+    return request<User>('/users', {
+        method: 'POST',
+        body: JSON.stringify(payload), // transforma o objeto em texto JSON
+    })
+}
+
+// Edita um usuário (PUT /users/{id})
+export function updateUser(id: number, payload: UserPayload): Promise<User> {
+    return request<User>(`/users/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+    })
 }
