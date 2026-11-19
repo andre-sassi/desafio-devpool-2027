@@ -36,7 +36,7 @@
 
     <!-- Erros da API (validação 400, usuário não encontrado 404, API fora do ar) -->
     <p v-if="error">{{ error }}</p>
-
+    <p v-if="success">{{ success }}</p>
     <!-- :disabled trava o botão durante o envio (evita clique duplo e cadastro duplicado) -->
     <button type="submit" :disabled="saving">
       {{ saving ? 'Salvando...' : 'Salvar' }}
@@ -71,6 +71,7 @@ const form = ref<UserPayload>({
 const loading = ref(false) // buscando o usuário (só na edição)
 const saving = ref(false)  // enviando para a API
 const error = ref('')      // mensagem de erro da API
+const success = ref('') // mensagem de sucesso (requisito 12)
 
 // Na edição, busca o usuário e preenche o formulário
 onMounted(async () => {
@@ -92,13 +93,17 @@ onMounted(async () => {
 async function save() {
   saving.value = true
   error.value = ''
+  success.value = ''
   try {
     if (id !== null) {
       await updateUser(id, form.value)
     } else {
       await createUser(form.value)
     }
-    router.push('/users') // deu certo: volta para a listagem
+    success.value = isEdit ? 'Usuário atualizado com sucesso.' : 'Usuário cadastrado com sucesso.'
+    // espera 1,5 segundo para a pessoa ler a mensagem, depois volta para a listagem
+    await new Promise((resolve) => setTimeout(resolve, 1500))
+    router.push('/users')
   } catch (e) {
     // Os erros de validação da API (400) chegam aqui, já juntos numa mensagem pelo api.ts
     error.value = e instanceof Error ? e.message : 'Erro ao salvar.'
@@ -106,4 +111,6 @@ async function save() {
     saving.value = false
   }
 }
+
+
 </script>

@@ -55,3 +55,8 @@ export function updateUser(id: number, payload: UserPayload): Promise<User> {
         body: JSON.stringify(payload),
     })
 }
+
+// Exclui um usuário (DELETE /users/{id})
+export function deleteUser(id: number): Promise<{ message: string }> {
+    return request<{ message: string }>(`/users/${id}`, { method: 'DELETE' })
+}
