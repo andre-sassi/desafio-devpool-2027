@@ -96,7 +96,7 @@ class UserService
         return ['user' => $this->repository->findById($id)];
     }
 
-    // Edita um usuário: confere se existe, valida, chega a duplicidade (ignorando ele mesmo) e grava
+    // Edita um usuário: confere se existe, valida, checa a duplicidade (ignorando ele mesmo) e grava
     public function update(int $id, array $data): array
     {
         // 1. Para editar, o usuário precisa existir

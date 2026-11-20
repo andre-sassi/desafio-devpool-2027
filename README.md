@@ -88,6 +88,14 @@ Acesse **http://localhost:5173**.
 
 > O arquivo `frontend/.env` (já incluído) aponta para a API em `http://localhost:8000`. Ele não contém segredos: tudo no frontend é público, pois vai para o navegador.
 
+## Problemas comuns
+
+- **`mysql` não é reconhecido no terminal (Windows):** use o caminho completo, por exemplo `"C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p`, ou adicione a pasta `bin` do MySQL à variável de ambiente `Path`.
+- **`could not find driver` ou `Call to undefined function mb_strlen`:** habilite as extensões `pdo_mysql` e `mbstring` no `php.ini` (remova o `;` das linhas `extension=pdo_mysql` e `extension=mbstring`) e abra um terminal novo.
+- **A tela mostra "Não foi possível conectar à API":** o servidor PHP não está rodando. Execute o passo 3.
+- **Erro de CORS no console do navegador:** a API só libera a origem `http://localhost:5173`. Se o Vite subir em outra porta (por exemplo, 5174, porque a 5173 já estava em uso), feche o outro processo e rode `npm run dev` novamente.
+- **A API responde "Erro interno no servidor":** confira se o MySQL está ligado e se a senha do `backend/.env` é a mesma definida no `create_user.sql`. O detalhe do erro aparece no terminal do `php -S`.
+
 ## Endpoints da API
 
 | Método | Rota | Sucesso | Erros |
