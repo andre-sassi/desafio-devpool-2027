@@ -18,7 +18,13 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
         throw new Error('Não foi possível conectar à API. Verifique se o servidor está ligado.')
     }
 
-    const data = await response.json()
+    // Se a resposta não for JSON (algo muito errado no servidor), mostramos uma mensagem amigável
+    let data
+    try {
+        data = await response.json()
+    } catch {
+        throw new Error('Resposta inválida do servidor.')
+    }
 
     // response.ok = status entre 200 e 299
     if (!response.ok) {

@@ -21,15 +21,17 @@ class UserService
         $errors = [];
 
         // Regra 2: nome obrigatório, mínimo de 3 caracteres (sem contar espaços nas pontas)
+        // Adicionado limite máximo de 100 caracteres
         $name = trim($data['name'] ?? ''); // ?? '' = se o campo não veio, usa texto vazio
-        if (mb_strlen($name) < 3) { // mb_strlen conta letras (strlen contaria bytes: "ã" ocupa 2)
-            $errors[] = 'O nome é obrigatório e deve ter no mínimo 3 caracteres.';
+        if (mb_strlen($name) < 3 ||  mb_strlen($name) > 100) { // mb_strlen conta letras (strlen contaria bytes: "ã" ocupa 2)
+            $errors[] = 'O nome é obrigatório e deve ter entre 3 e 100 caracteres.';
         }
 
         // Regra 4: login obrigatório, mínimo de 3 caracteres (trim tira os espaços das pontas)
+        // Adicionado limite máximo de 32 caracteres
         $login = trim($data['login'] ?? '');
-        if (mb_strlen($login) < 3) {
-            $errors[] = 'O login é obrigatório e deve ter no mínimo 3 caracteres.';
+        if (mb_strlen($login) < 3 || mb_strlen($login) > 32) {
+            $errors[] = 'O login é obrigatório e deve ter entre 3 e 32 caracteres.';
         }
 
         // Regra 5: No cadastro -> senha obrigatória, mínimo de 8 caracteres (sem trim: espaço na senha é proposital)
@@ -40,9 +42,10 @@ class UserService
         }
 
         // Regra 3: e-mail obrigatório e em formato válido (a unicidade é checada no cadastro, pois precisa do banco)
+        // Adicionado limite máximo de 255 caracteres
         $email = trim($data['email'] ?? '');
-        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { // filter_var devolve false se o formato for inválido
-            $errors[] = 'O e-mail é obrigatório e deve estar em um formato válido.';
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL) || mb_strlen($email) > 255) { // filter_var devolve false se o formato for inválido
+            $errors[] = 'O e-mail é obrigatório, deve estar em um formato válido e deve ter no máximo 255 caracteres.';
         }
 
         // Regra 6: active é opcional (null = não veio); se vier, precisa ser booleano (true/false)

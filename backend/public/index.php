@@ -1,4 +1,6 @@
 <?php
+// Erros e avisos do PHP não aparecem na resposta (vão só para o terminal do servidor)
+ini_set('display_errors', '0');
 
 //Porta de entrada da API, este arquivo entrega a requisição para o Router decidir o que fazer.
 require __DIR__ . '/../src/Router.php'; // carrega a classe Router
@@ -130,5 +132,12 @@ $metodo = $_SERVER['REQUEST_METHOD'];
 // Caminho da URL SEM a query string: "/users?teste=1" vira "/users"
 $caminho = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
-// O Router procura a rota correspondente e envia a resposta
-$router->dispatch($metodo, $caminho);
+// O Router procura a rota e responde. Se algo inesperado quebrar (ex.: banco fora do ar),
+// devolvemos um 500 genérico em JSON, sem expor caminhos, SQL ou detalhes internos
+try {
+    $router->dispatch($metodo, $caminho);
+} catch (Throwable $e) {
+    error_log($e->getMessage()); // o detalhe fica registrado no terminal do servidor, para quem desenvolve
+    http_response_code(500);
+    echo json_encode(['error' => 'Erro interno no servidor.'], JSON_UNESCAPED_UNICODE);
+}
