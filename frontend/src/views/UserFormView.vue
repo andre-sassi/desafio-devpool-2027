@@ -1,49 +1,59 @@
 <template>
   <!-- O título muda conforme o modo: cadastro (/users/new) ou edição (/users/:id/edit) -->
-  <h2>{{ isEdit ? 'Editar usuário' : 'Novo usuário' }}</h2>
+  <div class="page-header">
+    <h2>{{ isEdit ? 'Editar usuário' : 'Novo usuário' }}</h2>
+  </div>
 
-  <!-- Na edição, enquanto busca o usuário na API -->
-  <p v-if="loading">Carregando...</p>
+  <div class="card">
+    <!-- Na edição, enquanto busca o usuário na API -->
+    <p v-if="loading" class="state">Carregando...</p>
 
-  <!-- @submit.prevent: chama o save() e impede o navegador de recarregar a página -->
-  <form v-else @submit.prevent="save">
-    <!-- v-model liga o campo ao form, nos dois sentidos -->
-    <label>
-      Nome
-      <input v-model="form.name" type="text" />
-    </label>
+    <!-- @submit.prevent: chama o save() e impede o navegador de recarregar a página -->
+    <form v-else class="form" @submit.prevent="save">
+      <!-- v-model liga cada campo ao form, nos dois sentidos -->
+      <div class="form-grid">
+        <label class="field field-full">
+          Nome
+          <input v-model="form.name" type="text" />
+        </label>
 
-    <label>
-      E-mail
-      <input v-model="form.email" type="email" />
-    </label>
+        <label class="field">
+          E-mail
+          <input v-model="form.email" type="email" />
+        </label>
 
-    <label>
-      Login
-      <input v-model="form.login" type="text" />
-    </label>
+        <label class="field">
+          Login
+          <input v-model="form.login" type="text" />
+        </label>
 
-    <label>
-      <!-- Na edição a senha é opcional: vazia = mantém a atual -->
-      {{ isEdit ? 'Senha (deixe em branco para manter a atual)' : 'Senha' }}
-      <input v-model="form.password" type="password" />
-    </label>
+        <label class="field field-full">
+          Senha
+          <input v-model="form.password" type="password" />
+          <!-- Na edição a senha é opcional: vazia = mantém a atual -->
+          <span v-if="isEdit" class="hint">Deixe em branco para manter a senha atual.</span>
+          <span v-else class="hint">Mínimo de 8 caracteres.</span>
+        </label>
 
-    <label>
-      <input v-model="form.active" type="checkbox" />
-      Ativo
-    </label>
+        <label class="checkbox field-full">
+          <input v-model="form.active" type="checkbox" />
+          Usuário ativo
+        </label>
+      </div>
 
-    <!-- Erros da API (validação 400, usuário não encontrado 404, API fora do ar) -->
-    <p v-if="error">{{ error }}</p>
-    <p v-if="success">{{ success }}</p>
-    <!-- :disabled trava o botão durante o envio (evita clique duplo e cadastro duplicado) -->
-    <button type="submit" :disabled="saving">
-      {{ saving ? 'Salvando...' : 'Salvar' }}
-    </button>
+      <!-- Erros da API (validação 400, não encontrado 404, servidor fora do ar) e sucesso -->
+      <p v-if="error" class="alert alert-error" style="margin-top: 20px">{{ error }}</p>
+      <p v-if="success" class="alert alert-success" style="margin-top: 20px">{{ success }}</p>
 
-    <RouterLink to="/users">Cancelar</RouterLink>
-  </form>
+      <div class="form-actions">
+        <!-- :disabled trava o botão durante o envio (evita clique duplo e cadastro duplicado) -->
+        <button type="submit" class="btn btn-primary" :disabled="saving">
+          {{ saving ? 'Salvando...' : 'Salvar' }}
+        </button>
+        <RouterLink to="/users" class="btn btn-secondary">Cancelar</RouterLink>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
